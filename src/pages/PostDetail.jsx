@@ -1,10 +1,11 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useLocation } from "react-router-dom";
 import { POSTS } from "../mock/posts";
 import "./../styles/PostDetail.css";
 import { useState } from "react";
 import Navbar from "../components/Navbar"; // Navbar import 추가
 
 export default function PostDetail({ commentCounts, onCommentAdd }) {
+  const location = useLocation();
   const { id } = useParams();
   const post = POSTS.find(p => String(p.id) === id);
 
@@ -92,6 +93,14 @@ export default function PostDetail({ commentCounts, onCommentAdd }) {
         <pre className="post-detail-content">
           {content}
         </pre>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
+          <button
+            className="post-detail-edit-btn"
+            disabled={!location.state?.fromMyPage}
+          >
+            수정하기
+          </button>
+        </div>
         <div className="post-detail-comment-wrap">
           <h3 className="post-detail-comment-title">
             댓글 <span>{comments.length}</span>

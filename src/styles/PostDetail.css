@@ -1,3 +1,26 @@
+.post-detail-edit-btn {
+  background: #ede9fe;
+  color: #7c3aed;
+  border: none;
+  border-radius: 999px;
+  padding: 7px 22px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-bottom: 0;
+  margin-top: 0;
+  transition: background 0.15s, color 0.15s;
+}
+.post-detail-edit-btn:disabled {
+  background: #f3f4f6;
+  color: #bdbdbd;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+.post-detail-edit-btn:hover {
+  background: #c4b5fd;
+  color: #4f46e5;
+}
 /* 프로젝트 소개 옆 신청하기 버튼 (홈의 label 버튼 스타일) */
 .post-detail-apply-btn {
   display: inline-block;
