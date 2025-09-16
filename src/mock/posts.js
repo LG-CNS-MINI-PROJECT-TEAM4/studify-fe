@@ -324,7 +324,7 @@ export const POSTS = [
 export const POSITIONS = [
   { key: "ALL", label: "전체" },
   { key: "BACKEND", label: "백엔드" },
-  { key: "FRONTEND", label: "프론트" },
+  { key: "FRONTEND", label: "프론트엔드" },
   { key: "PLANNER", label: "PM" },
   { key: "DESIGNER", label: "디자이너" },
   { key: "AI", label: "AI" },
