@@ -98,7 +98,7 @@ export default function PostDetail({ commentCounts, onCommentAdd }) {
           </h3>
           <form className="post-detail-comment-form" onSubmit={handleSubmit}>
             <div className="post-detail-comment-user">
-              <img src="/icon-user-hand.png" alt="user" className="post-detail-comment-icon" />
+              <img src="/icon-user.png" alt="user" className="post-detail-comment-icon" />
             </div>
             <textarea
               className="post-detail-comment-input"

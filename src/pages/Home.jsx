@@ -47,6 +47,19 @@ export default function Home() {
     }));
   };
 
+  // 페이지네이션 관련 상태
+  const PAGE_SIZE = 15;
+  const [page, setPage] = useState(1);
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const pagedPosts = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  // 페이지 이동 함수
+  const goPage = (p) => {
+    if (p < 1 || p > totalPages) return;
+    setPage(p);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   return (
     <div className="app">
       <Navbar />
@@ -61,7 +74,6 @@ export default function Home() {
         TYPES={TYPES}
         POSITIONS={POSITIONS}
       />
-
 
       <main className="container">
         <div className="list-head">
@@ -79,7 +91,7 @@ export default function Home() {
         />
 
         <div className="grid">
-          {filtered.map((e) => (
+          {pagedPosts.map((e) => (
             <PostCard
               key={e.id}
               e={e}
@@ -87,6 +99,31 @@ export default function Home() {
             />
           ))}
         </div>
+
+        {/* 페이지네이션 */}
+        {totalPages > 1 && (
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 8, margin: '32px 0' }}>
+            <button onClick={() => goPage(page - 1)} disabled={page === 1} style={{ padding: '6px 14px', borderRadius: 8, border: '1px solid #ddd', background: '#fff', cursor: page === 1 ? 'not-allowed' : 'pointer' }}>&lt;</button>
+            {Array.from({ length: totalPages }, (_, i) => (
+              <button
+                key={i + 1}
+                onClick={() => goPage(i + 1)}
+                style={{
+                  padding: '6px 14px',
+                  borderRadius: 8,
+                  border: '1px solid #ddd',
+                  background: page === i + 1 ? '#7c3aed' : '#fff',
+                  color: page === i + 1 ? '#fff' : '#222',
+                  fontWeight: page === i + 1 ? 700 : 500,
+                  cursor: 'pointer',
+                }}
+              >
+                {i + 1}
+              </button>
+            ))}
+            <button onClick={() => goPage(page + 1)} disabled={page === totalPages} style={{ padding: '6px 14px', borderRadius: 8, border: '1px solid #ddd', background: '#fff', cursor: page === totalPages ? 'not-allowed' : 'pointer' }}>&gt;</button>
+          </div>
+        )}
       </main>
 
       <footer className="footer">
