@@ -1,0 +1,130 @@
+.write { 
+  min-height: 100vh; 
+  padding: 24px 0; 
+}
+
+.write-card {
+  max-width: 760px; 
+  margin: 0 auto; 
+  background: #fff; 
+  border: 1px solid var(--border);
+  border-radius: 16px; 
+  padding: 20px; 
+  box-shadow: 0 8px 22px rgba(0,0,0,0.06);
+}
+
+.write-head { 
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between; 
+}
+
+.write-head h1 { 
+  margin: 0; 
+  font-size: 22px; 
+  font-weight: 800; 
+}
+
+.write-form { 
+  display: grid; 
+  gap: 14px; 
+  margin-top: 12px; 
+}
+
+.write-form label { 
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 14px;
+  margin-bottom: 0;
+}
+
+.write-form label > span {
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.write-form input,
+.write-form select,
+.write-form textarea {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  min-height: 40px;
+  font-size: 14px;
+  padding: 10px 14px;
+  box-shadow: none;
+  background: #fff;
+  color: #222;
+  outline: none;
+  transition: border 0.15s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.write-form input:focus,
+.write-form select:focus,
+.write-form textarea:focus {
+  border-color: #a5b4fc;
+}
+
+.row2 { 
+  display: grid; 
+  grid-template-columns: 1fr 1fr; 
+  gap: 24px; 
+  align-items: start;      
+}
+
+@media (min-width: 720px) { 
+  .row2 { grid-template-columns: 1fr 1fr; } 
+}
+
+.error {
+  background: #fef2f2; 
+  color: #b91c1c; 
+  border: 1px solid #fee2e2;
+  padding: 8px 10px; 
+  border-radius: 8px; 
+  font-size: 13px;
+}
+
+.actions { 
+  display: flex; 
+  gap: 8px; 
+  justify-content: flex-end; 
+}
+
+/* 모집분야(react-select) 칸 길이 input과 동일하게 */
+.write-form .react-select__control {
+  min-height: 40px;
+  width: 100%;
+  border-radius: 12px;
+  box-sizing: border-box;
+}
+
+.write-form .react-select__value-container {
+  width: 100%;
+  flex-wrap: wrap;
+  gap: 3px;
+  max-height: 72px;
+  align-items: flex-start;
+  overflow-y: auto;
+}
+
+.write-form .react-select__multi-value {
+  background: #f3f4f6;
+  border-radius: 8px;
+  margin-right: 0;
+}
+
+.write-form .react-select__multi-value__label {
+  color: #374151;
+}
+
+.write-form .react-select__multi-value__remove {
+  color: #6b7280;
+}
+.write-form .react-select__multi-value__remove:hover {
+  background: #fee2e2;
+  color: #b91c1c;
+}

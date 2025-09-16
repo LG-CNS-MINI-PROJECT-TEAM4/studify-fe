@@ -1,0 +1,195 @@
+.post-detail-container {
+  max-width: 760px;
+  margin: 40px auto;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 32px 24px;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.06);
+}
+
+.post-detail-main-container {
+  max-width: 900px;
+  margin: 40px auto 0 auto;
+  background: none;
+  border: none;
+  box-shadow: none;
+  border-radius: 0;
+  padding: 0 24px;
+}
+
+.post-detail-header {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  align-items: center;
+  margin-bottom: 32px;
+  text-align: center;
+}
+
+.post-detail-header h1 {
+  margin-top: 12px;
+  font-size: 2rem;
+  font-weight: bold;
+  grid-column: 2 / 3;
+}
+
+.post-detail-header p {
+  color: #6b7280;
+  margin-bottom: 0;
+  grid-column: 2 / 3;
+}
+
+.post-detail-header a {
+  justify-self: end;
+  color: #7c3aed;
+  font-weight: 500;
+  font-size: 1.1rem;
+  text-decoration: underline;
+  grid-column: 3 / 4;
+}
+
+.post-detail-info-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;   /* 2열 */
+  grid-template-rows: repeat(4, auto); /* 4행 */
+  gap: 0 48px;
+  justify-items: start;
+  margin-bottom: 32px;
+  width: 100%;
+}
+
+.post-detail-info-col {
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+  /* 2열 구조에 맞게 한 칸에 하나씩만 */
+}
+
+.post-detail-label-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 18px;
+  margin-top: 16px;
+}
+
+.post-detail-label-row:first-child {
+  margin-top: 0;
+}
+
+.post-detail-label {
+  color: #6b7280;
+  font-weight: bold;
+  min-width: 90px;
+}
+
+.post-detail-info-value {
+  font-weight: bold;
+  color: #222;
+}
+
+.post-detail-hr {
+  margin: 32px 0 24px 0;
+  border: none;
+  border-top: 1px solid #e5e7eb;
+}
+
+.post-detail-section-title {
+  font-size: 1.3rem;
+  font-weight: bold;
+  margin-bottom: 18px;
+}
+
+.post-detail-content {
+  margin-top: 32px;
+  color: #374151;
+  font-size: 16px;
+}
+
+.post-detail-content {
+  background: none;
+  border: none;
+  font-size: 16px;
+  color: #222;
+  min-height: 320px;
+  margin-bottom: 40px;
+  white-space: pre-wrap;
+  line-height: 1.7;
+}
+
+.post-detail-comment-wrap {
+  margin-top: 32px;
+  padding-bottom: 40px;
+}
+
+.post-detail-comment-title {
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin-bottom: 12px;
+  color: #222;
+}
+
+.post-detail-comment-title span {
+  color: #6b7280;
+  font-size: 1rem;
+  margin-left: 4px;
+}
+
+.post-detail-comment-form {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.post-detail-comment-user {
+  margin-top: 8px;
+}
+
+.post-detail-comment-icon {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+}
+
+.post-detail-comment-input {
+  flex: 1;
+  border: 2px solid #e5e7eb;
+  border-radius: 18px;
+  padding: 18px 20px;
+  font-size: 18px;
+  color: #222;
+  background: #fff;
+  resize: none;
+  min-height: 60px;
+  margin-right: 12px;
+}
+
+.post-detail-comment-btn {
+  background: #222;
+  color: #fff;
+  border: none;
+  border-radius: 24px;
+  padding: 0 32px;
+  height: 48px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: background 0.15s;
+}
+
+.post-detail-comment-btn:hover {
+  background: #444;
+}
+
+.post-detail-comment-list {
+  margin-top: 10px;
+}
+
+.post-detail-comment-item {
+  padding: 10px 0;
+  border-bottom: 1px solid #f3f4f6;
+  font-size: 16px;
+  color: #222;
+}

@@ -1,0 +1,27 @@
+.navbar{ 
+  position: sticky; 
+  top:0; z-index:10; 
+  backdrop-filter: saturate(1.2) blur(6px);
+  background: rgba(255,255,255,0.85); 
+  border-bottom:1px solid var(--border); }
+
+.nav-inner{ 
+  height:56px; 
+  display:flex; 
+  align-items:center; 
+  justify-content:space-between; }
+
+.brand{ display:flex; 
+  align-items:center; 
+  gap:8px; 
+  font-weight:600; }
+
+.brand img {
+  height: 40px;
+  width: auto;
+  display: block;
+}
+
+.nav-actions{
+   display:flex; 
+   gap:8px; }
