@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import "../styles/SignIn.css";
 import Button from "../components/Button";
+import Navbar from "../components/Navbar";
+
 
 export default function SignIn() {
   const [form, setForm] = useState({ email: "", passwd: "" });
@@ -22,6 +24,8 @@ export default function SignIn() {
   };
 
   return (
+            <div className="app">
+              <Navbar />
     <div className="signin">
       <div className="container signin-card">
         <h1>로그인</h1>
@@ -62,5 +66,7 @@ export default function SignIn() {
         </div>
       </div>
     </div>
+  </div>
+
   );
 }

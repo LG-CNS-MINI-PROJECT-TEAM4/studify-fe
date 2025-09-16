@@ -2,8 +2,9 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../styles/Write.css";
 import { TYPES, POSITIONS } from "../mock/posts";
-import api from "../api/axios";
 import Select from "react-select";
+import Navbar from "../components/Navbar"; // Navbar import 추가
+
 
 export default function WritePage() {
   const nav = useNavigate();
@@ -45,53 +46,14 @@ export default function WritePage() {
     });
   };
 
-  const submit = async (e) => {
+  const submit = (e) => {
     e.preventDefault();
     setErr("");
-
     if (!form.title.trim()) {
       setErr("제목을 입력해 주세요.");
       return;
     }
-
-    try {
-      setSaving(true);
-
-      const token = localStorage.getItem("accessToken");
-      const authorEmail = localStorage.getItem("userEmail");
-
-      const payload = {
-        title: form.title.trim(),
-        type: form.type,
-        // 서버 호환: CSV와 배열 둘 다 보냄 (백엔드 준비되면 positions만 사용 권장)
-        position: form.position.join(","),   // e.g. "BACKEND,FRONTEND"
-        positions: form.position,            // ["BACKEND","FRONTEND"]
-        deadline: form.deadline || null,     // 빈 문자열이면 null
-        contact: form.contact.trim(),
-        kakaoLink: form.kakaoLink.trim(),
-        content: form.content.trim(),
-        authorEmail,
-        recruitCount: form.recruitCount,
-        method: form.method,
-        period: form.period,
-        language: form.language,
-      };
-
-      await api.post("/api/posts", payload, {
-        headers: { Authorization: token ? `${token}` : "" },
-      });
-
-      nav("/");
-    } catch (e1) {
-      const msg =
-        e1?.response?.data?.message ||
-        e1?.response?.data?.error ||
-        e1?.message ||
-        "등록 실패";
-      setErr(msg);
-    } finally {
-      setSaving(false);
-    }
+    nav("/");
   };
 
   // react-select 옵션 변환
@@ -102,10 +64,11 @@ export default function WritePage() {
 
   return (
     <div className="write">
+            <Navbar />
       <div className="container write-card">
         <div className="write-head">
-          <h1>글 작성</h1>
-          <Link to="/" className="link">← 목록으로</Link>
+          <h1>팀원 모집하기</h1>
+          {/* <Link to="/" className="link">← 목록으로</Link> */}
         </div>
 
         <form className="write-form" onSubmit={submit} noValidate>

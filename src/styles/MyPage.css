@@ -1,0 +1,47 @@
+.mypage-save-row {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 24px;
+}
+.mypage-save-btn {
+  min-width: 90px;
+  padding: 8px 22px;
+  border-radius: 999px;
+  background: #2563eb;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  box-shadow: 0 2px 8px rgba(37,99,235,0.08);
+}
+.mypage-save-btn:hover {
+  background: #1e40af;
+  color: #fff;
+}
+.mypage-footer-right {
+  justify-content: flex-end;
+}
+.mypage-main {
+  max-width: 600px;
+  margin: 40px auto;
+}
+.mypage-title {
+  margin-bottom: 32px;
+}
+.mypage-info-box {
+  background: #f9fafb;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+}
+.mypage-info-item {
+  margin-bottom: 16px;
+}
+.mypage-footer {
+  justify-content: center;
+}
+.mypage-btn {
+  margin: 0 8px;
+}

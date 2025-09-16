@@ -4,20 +4,20 @@
     align-items: center; }
 
 .signin-card {
-  max-width: 420px; 
+  max-width: 480px;
   width: 100%;
-  border: 1px solid var(--border); 
-  border-radius: 16px; 
-  background: #fff;
-  padding: 24px; 
-  margin: 40px auto; 
-  box-shadow: 0 8px 22px rgba(0,0,0,0.06);
+  margin: 40px auto;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
 }
 
 .signin-card h1 { 
-    margin: 0; 
-    font-size: 22px; 
-    font-weight: 800; }
+  margin: 0 0 1.5rem 0; 
+  font-size: 22px; 
+  font-weight: 800; }
 
 .muted { 
     color: var(--muted); 
@@ -49,6 +49,6 @@
 }
 
 .signin-extra { 
-    margin-top: 12px; 
-    display: flex; 
-    justify-content: space-between; }
+  margin-top: 2.2rem; 
+  display: flex; 
+  justify-content: space-between; }

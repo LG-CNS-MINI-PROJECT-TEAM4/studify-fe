@@ -15,9 +15,9 @@
 }
 
 .signup-card h1 { 
-    margin: 0; 
-    font-size: 22px; 
-    font-weight: 800; }
+  margin: 0 0 1.5rem 0; 
+  font-size: 22px; 
+  font-weight: 800; }
 
 .muted { 
     color: var(--muted); 

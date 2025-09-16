@@ -1,3 +1,21 @@
+/* 프로젝트 소개 옆 신청하기 버튼 (홈의 label 버튼 스타일) */
+.post-detail-apply-btn {
+  display: inline-block;
+  padding: 8px 22px;
+  border-radius: 999px;
+  background: #2563eb;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  box-shadow: 0 2px 8px rgba(37,99,235,0.08);
+}
+.post-detail-apply-btn:hover {
+  background: #1e40af;
+  color: #fff;
+}
 .post-detail-container {
   max-width: 760px;
   margin: 40px auto;

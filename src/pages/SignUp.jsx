@@ -2,6 +2,9 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import "../styles/SignUp.css";
 import Button from "../components/Button";
+import Navbar from "../components/Navbar";
+
+
 
 export default function SignUp() {
   const [form, setForm] = useState({
@@ -9,6 +12,7 @@ export default function SignUp() {
     passwd: "",
     confirm: "",
     nickname: "",
+    birth: "",
   });
   const [err, setErr] = useState("");
 
@@ -31,8 +35,10 @@ export default function SignUp() {
   };
 
   return (
+        <div className="app">
+          <Navbar />
     <div className="signup">
-      <div className="container signup-card">
+      <div className="container">
         <h1>회원가입</h1>
 
         <form className="signup-form" onSubmit={onSubmit} noValidate>
@@ -53,7 +59,6 @@ export default function SignUp() {
             <input
               name="passwd"
               type="password"
-              placeholder="••••••••"
               value={form.passwd}
               onChange={onChange}
               autoComplete="new-password"
@@ -65,10 +70,21 @@ export default function SignUp() {
             <input
               name="confirm"
               type="password"
-              placeholder="••••••••"
               value={form.confirm}
               onChange={onChange}
               autoComplete="new-password"
+            />
+          </label>
+
+
+          <label>
+            생년월일
+            <input
+              name="birth"
+              type="date"
+              value={form.birth}
+              onChange={onChange}
+              autoComplete="bday"
             />
           </label>
 
@@ -85,14 +101,17 @@ export default function SignUp() {
 
           {err && <div className="error" role="alert">{err}</div>}
 
-          <Button variant="primary" type="submit">가입하기</Button>
+          <div className="signup-form__submit">
+            <Button variant="primary" type="submit">가입하기</Button>
+          </div>
         </form>
 
         <div className="signup-extra">
-          <Link to="/signin">← 로그인으로</Link>
-          <Link to="/">홈으로</Link>
+          {/* <Link to="/signin">← 로그인으로</Link>
+          <Link to="/">홈으로</Link> */}
         </div>
       </div>
+    </div>
     </div>
   );
 }

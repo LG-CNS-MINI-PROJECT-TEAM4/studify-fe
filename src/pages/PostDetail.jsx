@@ -85,7 +85,10 @@ export default function PostDetail({ commentCounts, onCommentAdd }) {
           </div>
         </div>
         <hr className="post-detail-hr" />
-        <h2 className="post-detail-section-title">프로젝트 소개</h2>
+        <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, marginBottom: 8}}>
+          <h2 className="post-detail-section-title" style={{marginBottom: 0}}>프로젝트 소개</h2>
+          <button className="post-detail-apply-btn">신청하기</button>
+        </div>
         <pre className="post-detail-content">
           {content}
         </pre>

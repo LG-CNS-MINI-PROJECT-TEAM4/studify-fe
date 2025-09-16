@@ -10,7 +10,7 @@ export default function Search({
         <div className="search-banner">
           <h1 className="search-title">
             <span style={{ fontWeight: 'bold', fontFamily: 'cookierunfont, sans-serif' }}>
-              팀원 찾기는 스터디파이에서
+              IT 팀원 찾기는 스터디파이에서
             </span>
           </h1>
         </div>
