@@ -20,12 +20,12 @@ export default function Navbar() {
       <div className="container nav-inner">
         <Link to="/" className="brand" style={{ textDecoration: "none" }}>
           <img src="/studyfy_logo.png" alt="StudyFy" />
-          <span style={{ fontSize: 28, fontWeight: 700, color: "#4B256D", marginLeft: 8 }}>StudyFy</span>
+          <span style={{ fontSize: 28, fontWeight: 'bold', color: "#4B256D", marginLeft: 8, fontFamily: 'cookierunfont' }}>StudyFy</span>
         </Link>
         <div className="nav-actions">
           <Button variant="ghost" onClick={goWrite}>글 올리기</Button>
+          <Button variant="ghost" onClick={() => navigate("/mypage")}>마이페이지</Button>
           <Button variant="primary" onClick={goLogin}>로그인</Button>
-          <Button variant="ghost" onClick={() => navigate("/signup")}>회원가입</Button>
         </div>
       </div>
     </nav>

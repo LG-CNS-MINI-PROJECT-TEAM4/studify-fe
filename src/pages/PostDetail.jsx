@@ -48,7 +48,7 @@ export default function PostDetail({ commentCounts, onCommentAdd }) {
               {post.author} · {post.postDate}
             </p>
           </div>
-          <Link to="/">홈으로</Link>
+
         </div>
         <div className="post-detail-info-row">
           <div className="post-detail-label-row">
@@ -80,7 +80,7 @@ export default function PostDetail({ commentCounts, onCommentAdd }) {
             <span className="post-detail-info-value">{Array.isArray(post.position) ? post.position.join(", ") : post.position}</span>
           </div>
           <div className="post-detail-label-row">
-            <span className="post-detail-label">사용 언어</span>
+            <span className="post-detail-label">기술 스택</span>
             <span className="post-detail-info-value">{post.language}</span>
           </div>
         </div>

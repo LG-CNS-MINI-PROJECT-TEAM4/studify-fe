@@ -1,4 +1,4 @@
-import Select from "./Select";
+
 import "../styles/Search.css";
 
 export default function Search({
@@ -7,9 +7,13 @@ export default function Search({
   return (
     <div className="search">
       <div className="container">
-        <h1 className="search-title">
-          STUDYFY <span className="accent">스터디 · 프로젝트</span>
-        </h1>     
+        <div className="search-banner">
+          <h1 className="search-title">
+            <span style={{ fontWeight: 'bold', fontFamily: 'cookierunfont, sans-serif' }}>
+              팀원 찾기는 스터디파이에서
+            </span>
+          </h1>
+        </div>
 
         <div className="search-row">
           <div className="search-box">
@@ -21,11 +25,7 @@ export default function Search({
             />
             <button className="btn dark">검색</button>
           </div>
-
-          <div className="filters">
-            <Select label="구분" options={TYPES} value={type} onChange={setType} />
-            <Select label="포지션" options={POSITIONS} value={position} onChange={setPosition} />
-          </div>
+          {/* filters 영역은 Home.jsx로 이동 */}
         </div>
 
       </div>

@@ -1,14 +1,38 @@
-.search{ 
-  border-bottom:1px solid var(--border); 
-  background: linear-gradient(180deg,#fff, #f8fafc); 
-  padding: 36px 0; }
+body, .search, .search-row, .search-box, .filters, .highlights, .highlight {
+  font-family: 'cookierunfontregular', sans-serif, 'cookierunfontbold';
+  font-weight: normal;
+}
+.search{
+  /* border-bottom:1px solid var(--border); */
+  padding: 36px 0;
+  margin-bottom: 32px;
+}
+
+/* 연보라색 둥근 배너 - 가운데만 */
+.search-banner {
+  background: #e0edff;
+  border-radius: 32px;
+  padding: 108px 0 84px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 24px;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+}
 
 .search-title{ 
   font-size:24px; 
-  font-weight:800; 
-  letter-spacing:-0.02em; }
+  font-weight: bold;
+  letter-spacing:-0.02em; 
+  font-family: 'cookierunfontbold', sans-serif;
+}
 
 .accent{ 
+  font-family: 'cookierunfont', 'CookieRun Regular', sans-serif;
+  font-weight: normal;
   color:transparent; 
   background: linear-gradient(90deg,#7c3aed,#4f46e5); 
   -webkit-background-clip: text; 

@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import Navbar from "../components/Navbar";
 import Search from "../components/Search";
+import Filters from "../components/Filters";
 import PostCard from "../components/PostCard";
 import "../App.css";
 import "../styles/List.css";
@@ -49,6 +50,7 @@ export default function Home() {
   return (
     <div className="app">
       <Navbar />
+
       <Search
         q={q}
         setQ={setQ}
@@ -60,11 +62,21 @@ export default function Home() {
         POSITIONS={POSITIONS}
       />
 
+
       <main className="container">
         <div className="list-head">
           <h2>게시글 목록</h2>
           <Link to="/write" className="link">글 작성</Link>
         </div>
+
+        <Filters
+          type={type}
+          setType={setType}
+          position={position}
+          setPosition={setPosition}
+          TYPES={TYPES}
+          POSITIONS={POSITIONS}
+        />
 
         <div className="grid">
           {filtered.map((e) => (

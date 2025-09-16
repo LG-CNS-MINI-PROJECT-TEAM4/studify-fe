@@ -23,5 +23,37 @@
 }
 
 .nav-actions{
-   display:flex; 
-   gap:8px; }
+  display: flex;
+  gap: 8px;
+}
+
+.nav-actions .btn {
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid var(--border);
+  color: #333;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 7px 18px;
+  transition: background 0.15s, color 0.15s, border 0.15s;
+}
+.nav-actions .btn.primary {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+}
+.nav-actions .btn.dark {
+  background: #4B256D;
+  color: #fff;
+  border: none;
+}
+.nav-actions .btn.ghost {
+  background: #f3f4f6;
+  color: #333;
+  border: 1px solid #e5e7eb;
+}
+.nav-actions .btn:hover {
+  background: #eef2ff;
+  color: #4B256D;
+  border-color: #a5b4fc;
+}
