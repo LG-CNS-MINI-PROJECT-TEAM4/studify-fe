@@ -1,4 +1,4 @@
-import { useParams, Link, useLocation } from "react-router-dom";
+import { useParams, Link, useLocation, useNavigate } from "react-router-dom";
 import { POSTS } from "../mock/posts";
 import "./../styles/PostDetail.css";
 import { useState } from "react";
@@ -6,6 +6,7 @@ import Navbar from "../components/Navbar"; // Navbar import 추가
 
 export default function PostDetail({ commentCounts, onCommentAdd }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const { id } = useParams();
   const post = POSTS.find(p => String(p.id) === id);
 
@@ -97,6 +98,7 @@ export default function PostDetail({ commentCounts, onCommentAdd }) {
           <button
             className="post-detail-edit-btn"
             disabled={!location.state?.fromMyPage}
+             onClick={() => navigate(`/write/${post.id}`, { state: location.state })}
           >
             수정하기
           </button>

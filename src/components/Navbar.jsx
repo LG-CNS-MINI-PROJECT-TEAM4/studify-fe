@@ -47,7 +47,7 @@ export default function Navbar() {
       <div className="container nav-inner">
   <Link to="/" className="brand nav-brand-link">
           <img src="/studyfy_logo.png" alt="StudyFy" />
-          <span className="nav-brand-title">StudyFy</span>
+          <span className="nav-brand-title">StudiFy</span>
         </Link>
         <div className="nav-actions">
           <button

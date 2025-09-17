@@ -17,9 +17,14 @@ export default function Home() {
 
   const matchPosition = (postPos, selected) => {
     if (selected === "ALL") return true;
-    if (postPos === "ALL") return true;
-    return Array.isArray(postPos) ? postPos.includes(selected) : postPos === selected;
-  };
+    const arr = Array.isArray(postPos) ? postPos : [postPos];
+    const toKey = (v) => String(v).trim().toUpperCase()
+          .replace("프론트엔드","FRONTEND")
+          .replace("백엔드","BACKEND")
+          .replace("디자이너","DESIGNER")
+          .replace("PM","PM"); 
+    return arr.map(toKey).includes(toKey(selected));
+};
 
   const filtered = useMemo(() => {
     const qLower = q.trim().toLowerCase();

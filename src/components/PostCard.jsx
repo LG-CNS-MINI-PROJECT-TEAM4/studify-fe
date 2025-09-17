@@ -28,7 +28,7 @@ export default function PostCard({ e, commentCount }) {
         
 
   <hr className="card-divider" />
-  <span className="badge card-badge-status">남은인원 {e.remain ?? 0}</span>
+  
 
       <div className="card-foot">
         <span className="card-writer">{e.author}</span>
