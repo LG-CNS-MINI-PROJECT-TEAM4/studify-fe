@@ -50,6 +50,8 @@ export default function MyPage() {
   const [pw, setPw] = useState({ newPassword: "", confirm: "" });
 
   const [posts, setPosts] = useState([]);
+  const [deletingIds, setDeletingIds] = useState(new Set());
+  
   const [postsLoading, setPostsLoading] = useState(false);
 
   const [saving, setSaving] = useState(false);
