@@ -2,6 +2,7 @@ import Navbar from "../components/Navbar";
 import { Link, useNavigate } from "react-router-dom";
 import "../styles/Footer.css";
 import "../styles/MyPage.css";
+import { deletePost } from "../api/post"; // 상단에 추가
 
 import { useState } from "react";
 
@@ -9,11 +10,11 @@ export default function MyPage() {
   // 탭 상태: 'info' 또는 'posts'
   const [tab, setTab] = useState('info');
   // 더미 글 데이터
-  const myPosts = [
+  const [myPosts, setMyPosts] = useState([
     { id: 1, title: "React 스터디 모집", date: "2025-09-01", comment: 2 },
     { id: 2, title: "Node.js 프로젝트 팀원 구함", date: "2025-08-20", comment: 5 },
     { id: 3, title: "Python 알고리즘 스터디", date: "2025-07-15", comment: 1 },
-  ];
+  ]);
   const [user, setUser] = useState({
     name: "신짱구",
     id: "zzhang123",
@@ -43,6 +44,18 @@ export default function MyPage() {
         .map(s => s.trim())
         .filter(Boolean)
     }));
+  };
+
+  // 삭제 핸들러
+  const handleDeletePost = async (postId) => {
+    if (!window.confirm("정말로 이 글을 삭제하시겠습니까?")) return;
+    try {
+      await deletePost(postId);
+      setMyPosts(posts => posts.filter(p => p.id !== postId));
+      alert("삭제되었습니다.");
+    } catch (e) {
+      alert("삭제에 실패했습니다.");
+    }
   };
 
   return (
@@ -94,7 +107,7 @@ export default function MyPage() {
                       <div className="mypage-posts-title">{post.title}</div>
                       <div className="mypage-posts-meta">{post.date} · 댓글 {post.comment}</div>
                     </Link>
-                    <button className="mypage-posts-delete-btn">삭제하기</button>
+                    <button className="mypage-posts-delete-btn" onClick={() => handleDeletePost(post.id)}>삭제하기</button>
                   </li>
                 ))}
               </ul>

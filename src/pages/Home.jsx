@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import Search from "../components/Search";
 import Filters from "../components/Filters";
@@ -7,13 +7,23 @@ import "../App.css";
 import "../styles/List.css";
 import "../styles/Footer.css";
 import Button from "../components/Button";
-import { POSTS, POSITIONS, TYPES } from "../mock/posts";
+import { POSITIONS, TYPES } from "../mock/posts"; // POSTS는 삭제
 import { Link } from "react-router-dom";
+import { getPosts } from "../api/post"; // 추가
 
 export default function Home() {
   const [q, setQ] = useState("");
   const [type, setType] = useState("ALL");
   const [position, setPosition] = useState("ALL");
+  const [showOpenOnly, setShowOpenOnly] = useState(false);
+
+  // 1. posts 상태 추가
+  const [posts, setPosts] = useState([]);
+
+  // 2. API로 모집글 불러오기
+  useEffect(() => {
+    getPosts().then(setPosts);
+  }, []);
 
   const matchPosition = (postPos, selected) => {
     if (selected === "ALL") return true;
@@ -23,17 +33,18 @@ export default function Home() {
 
   const filtered = useMemo(() => {
     const qLower = q.trim().toLowerCase();
-    return POSTS.filter((p) => {
+    return posts.filter((p) => {
       const byType = type === "ALL" || p.type === type;
       const byPos = matchPosition(p.position, position);
       const byQ = !qLower || p.title.toLowerCase().includes(qLower);
-      return byType && byPos && byQ;
+      const openOnly = !showOpenOnly || !isClosed(p);
+      return byType && byPos && byQ && openOnly;
     });
-  }, [q, type, position]);
+  }, [q, type, position, showOpenOnly, posts]);
 
   // 댓글 수를 postId별로 관리
   const [commentCounts, setCommentCounts] = useState(
-    POSTS.reduce((acc, post) => {
+    posts.reduce((acc, post) => {
       acc[post.id] = post.commentCount || 0;
       return acc;
     }, {})

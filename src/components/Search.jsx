@@ -1,9 +1,34 @@
-
+import { useState, useEffect } from "react";
+import { searchPosts, searchPostsByPosition } from "../api/post";
 import "../styles/Search.css";
 
 export default function Search({
-  q, setQ, type, setType, position, setPosition, TYPES, POSITIONS
+  q, setQ, type, setType, position, setPosition, TYPES, POSITIONS, onSearchResult
 }) {
+  const [loading, setLoading] = useState(false);
+
+  const handleSearch = async () => {
+    if (!q.trim()) return;
+    setLoading(true);
+    try {
+      const result = await searchPosts(q, "all");
+      if (onSearchResult) onSearchResult(result);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    // position이 "ALL"이 아니면 포지션 검색 API 호출
+    if (position && position !== "ALL") {
+      (async () => {
+        const result = await searchPostsByPosition(position);
+        if (onSearchResult) onSearchResult(result);
+      })();
+    }
+    // position이 "ALL"이면 전체 목록을 다시 불러오거나, 기존 검색 유지
+  }, [position]);
+
   return (
     <div className="search">
       <div className="container">
@@ -22,12 +47,13 @@ export default function Search({
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="(예: 백엔드 )"
+              onKeyDown={e => e.key === "Enter" && handleSearch()}
             />
-            <button className="btn dark">검색</button>
+            <button className="btn dark" onClick={handleSearch} disabled={loading}>
+              {loading ? "검색 중..." : "검색"}
+            </button>
           </div>
-          {/* filters 영역은 Home.jsx로 이동 */}
         </div>
-
       </div>
     </div>
   );

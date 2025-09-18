@@ -3,7 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import "../styles/Write.css";
 import { TYPES, POSITIONS } from "../mock/posts";
 import Select from "react-select";
-import Navbar from "../components/Navbar"; // Navbar import 추가
+import Navbar from "../components/Navbar";
+import { createPost } from "../api/post";
 
 
 export default function WritePage() {
@@ -46,14 +47,36 @@ export default function WritePage() {
     });
   };
 
-  const submit = (e) => {
+  const submit = async (e) => {
     e.preventDefault();
     setErr("");
     if (!form.title.trim()) {
       setErr("제목을 입력해 주세요.");
       return;
     }
-    nav("/");
+    setSaving(true);
+    try {
+      const postData = {
+        title: form.title,
+        content: form.content,
+        category: form.type === "PROJECT" ? "project" : "study",
+        recruitmentCount: Number(form.recruitCount),
+        techStack: form.language ? form.language.split(/,| /).map(s => s.trim()).filter(Boolean) : [],
+        status: "open",
+        deadline: form.deadline ? form.deadline + "T23:59:59" : null,
+        meetingType: form.method,
+        duration: form.period,
+        position: form.position,
+        authorId: 1, // 임시 사용자 ID
+      };
+      await createPost(postData);
+      alert("등록 성공!");
+      nav("/");
+    } catch (e) {
+      setErr("등록 실패: " + (e?.response?.data?.message || e.message));
+    } finally {
+      setSaving(false);
+    }
   };
 
   // react-select 옵션 변환
