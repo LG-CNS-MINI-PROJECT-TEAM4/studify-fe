@@ -1,100 +1,173 @@
-import { useParams, Link, useLocation, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-import Navbar from "../components/Navbar";
-import axios from "axios";
-import { closePost, updatePost } from "../api/post";
+import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 import "./../styles/PostDetail.css";
+import { useState, useEffect, useMemo } from "react";
+import Navbar from "../components/Navbar";
+import api from "../api/axios";
 
-export default function PostDetail({ commentCounts, onCommentAdd }) {
-  const location = useLocation();
+export default function PostDetail() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { id } = useParams();
 
-  // API로 받아온 post 데이터
   const [post, setPost] = useState(null);
   const [comments, setComments] = useState([]);
   const [comment, setComment] = useState("");
-  const [isClosed, setIsClosed] = useState(false);
+  const [err, setErr] = useState("");
+  const [closing, setClosing] = useState(false);
 
-  // 모집글 상세 조회 API 호출
+  const fromMyPage = Boolean(location.state?.fromMyPage);
+  // const isClosed = useMemo(() => post?.status === "CLOSED", [post?.status]);
+  const isClosed = post?.status?.toString().toUpperCase() === "CLOSED";
+
+  const userId = localStorage.getItem("userId"); // 로그인 시 저장해둔 유저 ID
+  const isMine = post?.authorId?.toString() === userId?.toString();
+
+
+
+  // 상세 + 댓글 함께 조회
   useEffect(() => {
-    async function fetchPost() {
+    (async () => {
       try {
-        const res = await axios.get(`/studify/api/v1/post/detail/${id}`);
-        setPost(res.data);
-        setComments(res.data.comments || []);
-        setIsClosed(res.data.status === "closed");
+        const { data } = await api.get(`/studify/api/v1/post/detail/${id}`);
+        setPost(data);
+        setComments(Array.isArray(data?.comments) ? data.comments : []);
       } catch (e) {
-        setPost(null);
+        setErr("게시글 불러오기 실패");
       }
-    }
-    fetchPost();
+    })();
   }, [id]);
 
+  // 댓글 입력 핸들러
+  const handleComment = (e) => setComment(e.target.value);
+
+  // 댓글 등록
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!comment.trim()) return;
+
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
+
+    try {
+      const payload = { content: comment.trim() };
+      const { data } = await api.post(
+        `/studify/api/v1/post/${id}/comment/register`,
+        payload,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setComments(Array.isArray(data) ? data : [...comments, data]);
+      setComment("");
+    } catch (e) {
+      console.error("댓글 등록 실패", e);
+      alert("댓글 등록 실패");
+    }
+  };
+
+  // 댓글 삭제
+  const handleDelete = async (commentId) => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
+    try {
+      await api.delete(`/studify/api/v1/post/${id}/comment/${commentId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setComments((prev) => prev.filter((c) => c.commentId !== commentId));
+    } catch (e) {
+      alert("댓글 삭제 실패 (작성자만 삭제 가능)");
+      console.error("댓글 삭제 실패", e);
+    }
+  };
+
+  // 모집글 마감
+  const handleClose = async () => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
+    if (isClosed) return;
+
+    try {
+      setClosing(true);
+      const { data } = await api.patch(
+        `/studify/api/v1/post/${id}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setPost((prev) => ({
+        ...prev,
+        ...(data || {}),
+        status: data?.status || "CLOSED",
+      }));
+    } catch (e) {
+      console.error("마감 처리 실패", e);
+      alert("마감 처리에 실패했습니다.");
+    } finally {
+      setClosing(false);
+    }
+  };
+
+  // 신청하기 버튼 클릭
+  const handleApply = async () => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
+    try {
+      // 실제 신청 API 호출
+      await api.post(`/studify/api/v1/applications/post/${id}`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true
+      });
+      alert("신청이 완료되었습니다.");
+    } catch (e) {
+      console.error("신청 실패", e);
+      alert("신청에 실패했습니다.");
+    }
+  };
+
+  // 로딩 실패 시
   if (!post) {
     return (
       <div className="container" style={{ padding: 24 }}>
-        <h2>게시물을 찾을 수 없습니다.</h2>
+        <Navbar />
+        <h2>게시글을 불러올 수 없습니다.</h2>
         <Link to="/">← 홈으로</Link>
       </div>
     );
   }
 
-  const handleComment = (e) => setComment(e.target.value);
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (comment.trim()) {
-      setComments([...comments, { content: comment.trim(), author: { nickname: "나" } }]);
-      setComment("");
-      onCommentAdd && onCommentAdd(post.postId);
-    }
-  };
-
-  // 마감 처리
-  const handleClose = async () => {
-    if (!window.confirm("정말로 모집을 마감하시겠습니까?")) return;
+  const createdAtStr = (() => {
+    const v = post?.createdAt;
+    if (!v) return "";
     try {
-      await closePost(post.postId);
-      setIsClosed(true);
-      alert("모집이 마감되었습니다.");
-      // 새로고침 또는 상태 갱신
-      setPost((prev) => ({ ...prev, status: "closed" }));
-    } catch (e) {
-      alert("마감에 실패했습니다.");
+      const d = new Date(v);
+      if (isNaN(d)) return String(v);
+      return d.toLocaleString();
+    } catch {
+      return String(v);
     }
-  };
-
-  const handleEdit = async () => {
-    if (!window.confirm("정말로 이 글을 수정하시겠습니까?")) return;
-    try {
-      // 예시: post 객체의 수정할 필드만 변경해서 전달 (실제 구현에 맞게 수정 필요)
-      const updated = {
-        ...post,
-        title: post.title + " (수정됨)", // 예시: 제목에 (수정됨) 추가
-        // content, category, recruitmentCount 등 필요한 필드 포함
-      };
-      await updatePost(post.postId, updated);
-      alert("수정되었습니다.");
-      // 상태 갱신
-      setPost(updated);
-    } catch (e) {
-      alert("수정에 실패했습니다.");
-    }
-  };
+  })();
 
   return (
     <>
       <Navbar />
       <div className="post-detail-main-container">
         <div className="post-detail-header">
-          <div></div>
-          <div>
-            <h1>{post.title}</h1>
-            <p>
-              {post.authorId ? `작성자 ID: ${post.authorId}` : ""} · {post.createdAt?.slice(0, 10)}
-            </p>
-          </div>
+          <h1>{post.title}</h1>
+          <p>
+            {(post.author?.nickname ?? post.authorId ?? "익명")} · {createdAtStr}
+          </p>
         </div>
+
         <div className="post-detail-info-row">
           <div className="post-detail-label-row">
             <span className="post-detail-label">모집 구분</span>
@@ -109,8 +182,8 @@ export default function PostDetail({ commentCounts, onCommentAdd }) {
             <span className="post-detail-info-value">{post.recruitmentCount}</span>
           </div>
           <div className="post-detail-label-row">
-            <span className="post-detail-label">시작 예정</span>
-            <span className="post-detail-info-value">{post.deadline?.slice(0, 10)}</span>
+            <span className="post-detail-label">마감일</span>
+            <span className="post-detail-info-value">{post.deadline}</span>
           </div>
           <div className="post-detail-label-row">
             <span className="post-detail-label">예상 기간</span>
@@ -118,64 +191,109 @@ export default function PostDetail({ commentCounts, onCommentAdd }) {
           </div>
           <div className="post-detail-label-row">
             <span className="post-detail-label">모집 분야</span>
-            <span className="post-detail-info-value">{Array.isArray(post.position) ? post.position.join(", ") : post.position}</span>
+            <span className="post-detail-info-value">{post.position?.join(", ")}</span>
           </div>
           <div className="post-detail-label-row">
             <span className="post-detail-label">기술 스택</span>
-            <span className="post-detail-info-value">{Array.isArray(post.techStack) ? post.techStack.join(", ") : post.techStack}</span>
+            <span className="post-detail-info-value">{post.techStack?.join(", ")}</span>
+          </div>
+          <div className="post-detail-label-row">
+            <span className="post-detail-label">상태</span>
+            <span className="post-detail-info-value">{post.status}</span>
           </div>
         </div>
-        <hr className="post-detail-hr" />
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, marginBottom: 8 }}>
-          <h2 className="post-detail-section-title" style={{ marginBottom: 0 }}>프로젝트 소개</h2>
-          <button className="post-detail-apply-btn" disabled={isClosed}>신청하기</button>
-        </div>
-        <pre className="post-detail-content">
-          {post.content}
-        </pre>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12, gap: 8 }}>
+
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            gap: 8,
+            margin: "12px 0 20px",
+          }}
+        >
           <button
             className="post-detail-edit-btn"
-            disabled={!location.state?.fromMyPage}
-            onClick={handleEdit}
+            // disabled={!fromMyPage || isClosed || closing}
+            disabled={!isMine || isClosed || closing}
+            onClick={handleClose}
+            title={!isMine ? "내 글이 아닙니다" : isClosed ? "이미 마감됨" : "모집 마감"}
+          >
+            {isClosed ? "마감됨" : closing ? "마감 처리 중..." : "모집 마감"}
+          </button>
+          <button
+            className="post-detail-edit-btn"
+            // disabled={!fromMyPage}
+            disabled={!isMine}
+            onClick={() =>
+              navigate(`/write/${post.postId ?? id}`, { state: location.state })
+            }
+            // title={!fromMyPage ? "내 글이 아닙니다" : "수정하기"}
+            title={!isMine ? "내 글이 아닙니다" : "수정하기"}
           >
             수정하기
           </button>
-          <button
+           <button
             className="post-detail-edit-btn"
-            style={{ background: "#e5e7eb", color: "#222" }}
-            disabled={!location.state?.fromMyPage || isClosed}
-            onClick={handleClose}
+            // disabled={fromMyPage || isClosed} // 작성자 또는 마감된 글이면 비활성화
+            disabled={isMine || isClosed} // 작성자 또는 마감된 글이면 비활성화
+            onClick={handleApply}
+            // title={fromMyPage ? "내 글은 신청할 수 없습니다" : isClosed ? "마감된 글입니다" : "신청하기"}
+            title={isMine ? "내 글은 신청할 수 없습니다" : isClosed ? "마감된 글입니다" : "신청하기"}
           >
-            모집 마감
+            신청하기
           </button>
         </div>
+
+        <hr className="post-detail-hr" />
+        <h2 className="post-detail-section-title">프로젝트 소개</h2>
+        <pre className="post-detail-content">{post.content}</pre>
+
         <div className="post-detail-comment-wrap">
           <h3 className="post-detail-comment-title">
             댓글 <span>{comments.length}</span>
           </h3>
+
           <form className="post-detail-comment-form" onSubmit={handleSubmit}>
-            <div className="post-detail-comment-user">
-              <img src="/icon-user.png" alt="user" className="post-detail-comment-icon" />
-            </div>
             <textarea
               className="post-detail-comment-input"
               placeholder="댓글을 입력하세요."
               value={comment}
-              onChange={handleComment}
+              onChange={(e) => setComment(e.target.value)}
               rows={3}
             />
             <button className="post-detail-comment-btn" type="submit">
               댓글 등록
             </button>
           </form>
+
           <div className="post-detail-comment-list">
-            {comments.map((c, i) => (
-              <div key={i} className="post-detail-comment-item">
-                <b>{c.author?.nickname || "익명"}</b>: {c.content || c}
+            {comments.map((c) => (
+              <div
+                key={c.commentId}
+                className="post-detail-comment-item"
+                style={{ display: "flex", alignItems: "center", gap: 8 }}
+              >
+                <div style={{ flex: 1 }}>
+                  <strong>
+                    {c.author?.nickname ?? c.authorId ?? "익명"}
+                  </strong>{" "}
+                  : {c.content}
+                </div>
+                <button
+                  onClick={() => handleDelete(c.commentId)}
+                  className="post-detail-comment-delete"
+                  style={{ color: "red" }}
+                  title="댓글 작성자만 삭제 가능"
+                >
+                  삭제
+                </button>
               </div>
             ))}
           </div>
+        </div>
+
+        <div style={{ marginTop: 24 }}>
+          <Link to="/">← 홈으로</Link>
         </div>
       </div>
     </>
