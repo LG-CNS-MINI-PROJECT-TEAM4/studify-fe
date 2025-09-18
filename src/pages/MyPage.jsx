@@ -2,6 +2,7 @@ import Navbar from "../components/Navbar";
 import { Link, useNavigate } from "react-router-dom";
 import "../styles/Footer.css";
 import "../styles/MyPage.css";
+import { deletePost } from "../api/post"; // 상단에 추가
 import { useEffect, useState } from "react";
 import api from "../api/axios";
 
@@ -279,6 +280,30 @@ export default function MyPage() {
 
       alert("회원탈퇴 되었습니다.");
       navigate("/signin");
+    }
+  };
+
+  // 삭제 핸들러
+  const handleDeletePost = async (postId) => {
+    if (!window.confirm("정말로 이 글을 삭제하시겠습니까?")) return;
+    try {
+      await deletePost(postId);
+      setMyPosts(posts => posts.filter(p => p.id !== postId));
+      alert("삭제되었습니다.");
+    } catch (e) {
+      alert("삭제에 실패했습니다.");
+    }
+  };
+
+  // 삭제 핸들러
+  const handleDeletePost = async (postId) => {
+    if (!window.confirm("정말로 이 글을 삭제하시겠습니까?")) return;
+    try {
+      await deletePost(postId);
+      setMyPosts(posts => posts.filter(p => p.id !== postId));
+      alert("삭제되었습니다.");
+    } catch (e) {
+      alert("삭제에 실패했습니다.");
     }
   };
 

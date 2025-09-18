@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import Search from "../components/Search";
 import Filters from "../components/Filters";
@@ -56,6 +56,15 @@ export default function Home() {
     const keys = list.map(normalizePosKey).filter(Boolean);
     return [...new Set(keys)]; // 중복 제거
   };
+  const [showOpenOnly, setShowOpenOnly] = useState(false);
+
+  // 1. posts 상태 추가
+  const [posts, setPosts] = useState([]);
+
+  // 2. API로 모집글 불러오기
+  useEffect(() => {
+    getPosts().then(setPosts);
+  }, []);
 
   const matchPosition = (postPos, selected) => {
     const sel = normalizePosKey(selected) || "ALL";
@@ -240,4 +249,10 @@ export default function Home() {
       </footer>
     </div>
   );
+}
+
+function isClosed(post) {
+  if (post.status === "closed") return true;
+  if (post.deadline && new Date(post.deadline) < new Date()) return true;
+  return false;
 }

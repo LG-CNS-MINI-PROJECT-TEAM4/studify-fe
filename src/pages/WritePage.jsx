@@ -5,6 +5,8 @@ import "../styles/Write.css";
 import { TYPES, POSITIONS, POSTS } from "../mock/posts";
 import Select from "react-select";
 import Navbar from "../components/Navbar";
+import { createPost } from "../api/post";
+
 
 export default function WritePage() {
   const nav = useNavigate();
@@ -58,7 +60,17 @@ export default function WritePage() {
     setForm(f => ({ ...f, [name]: value }));
   };
 
-  const submit = (e) => {
+  // 포지션 클릭 토글 (Ctrl/Cmd 없이 단일 클릭으로 다중 선택)
+  const togglePosition = (value) => {
+    setForm((f) => {
+      const set = new Set(f.position);
+      if (set.has(value)) set.delete(value);
+      else set.add(value);
+      return { ...f, position: Array.from(set) };
+    });
+  };
+
+  const submit = async (e) => {
     e.preventDefault();
     setErr("");
     if (!form.title.trim()) {
@@ -69,7 +81,29 @@ export default function WritePage() {
     if (isEdit) {
       nav(`/posts/${id}`);
     } else {
+      setSaving(true);
+    try {
+      const postData = {
+        title: form.title,
+        content: form.content,
+        category: form.type === "PROJECT" ? "project" : "study",
+        recruitmentCount: Number(form.recruitCount),
+        techStack: form.language ? form.language.split(/,| /).map(s => s.trim()).filter(Boolean) : [],
+        status: "open",
+        deadline: form.deadline ? form.deadline + "T23:59:59" : null,
+        meetingType: form.method,
+        duration: form.period,
+        position: form.position,
+        authorId: 1, // 임시 사용자 ID
+      };
+      await createPost(postData);
+      alert("등록 성공!");
       nav("/");
+    }
+    } catch (e) {
+      setErr("등록 실패: " + (e?.response?.data?.message || e.message));
+    } finally {
+      setSaving(false);
     }
   };
 
