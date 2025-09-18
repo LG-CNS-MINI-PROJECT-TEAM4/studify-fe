@@ -69,6 +69,9 @@ export default function SignIn() {
         localStorage.setItem("userId", String(foundId));
       }
 
+      // 인증 상태 변경 이벤트 발생 (WebSocket 연결을 위해 필요)
+      window.dispatchEvent(new Event("auth-changed"));
+
       // 로그인 성공 → 홈으로 이동
       navigate("/");
     } catch (error) {

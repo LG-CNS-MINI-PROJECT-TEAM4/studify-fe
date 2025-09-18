@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios from "./axios";
 
 // 모집글 전체 조회
 export const getPosts = async () => {
