@@ -284,17 +284,16 @@ export default function MyPage() {
   };
 
 
-  // 삭제 핸들러
-  const handleDeletePost = async (postId) => {
-    if (!window.confirm("정말로 이 글을 삭제하시겠습니까?")) return;
-    try {
-      await deletePost(postId);
-      setMyPosts(posts => posts.filter(p => p.id !== postId));
-      alert("삭제되었습니다.");
-    } catch (e) {
-      alert("삭제에 실패했습니다.");
-    }
-  };
+const handleDeletePost = async (postId) => {
+  if (!window.confirm("정말로 이 글을 삭제하시겠습니까?")) return;
+  try {
+    await deletePost(postId);
+    setPosts(posts => posts.filter(p => p.postId !== postId));
+    alert("삭제되었습니다.");
+  } catch (e) {
+    alert("삭제에 실패했습니다.");
+  }
+};
 
   return (
     <div className="app">
