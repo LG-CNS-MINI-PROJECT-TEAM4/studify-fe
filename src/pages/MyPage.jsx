@@ -432,7 +432,7 @@ const handleDeletePost = async (postId) => {
               ) : (
                 <ul className="mypage-posts-list">
                   {posts.map((post) => (
-                    <li key={post.postId} className="mypage-posts-item">
+                    <li key={post.postId} className="mypage-posts-item" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                       <Link
                         to={`/posts/${post.postId}`}
                         className="mypage-posts-link"
@@ -443,9 +443,23 @@ const handleDeletePost = async (postId) => {
                           {(post.createdAt || "").slice(0, 10)} · 댓글 {post.commentCount ?? 0}
                         </div>
                       </Link>
+                      <button
+                        className="mypage-posts-delete-btn"
+                        onClick={() => handleDeletePost(post.postId)}
+                        style={{
+                          background: "none",
+                          border: "none",
+                          color: "#d32f2f",
+                          cursor: "pointer",
+                          fontWeight: 600,
+                          marginLeft: 12,
+                          fontSize: 16,
+                        }}
+                      >
+                        삭제하기
+                      </button>
                     </li>
                   ))}
-
                 </ul>
               )}
             </div>
