@@ -56,10 +56,6 @@ export default function Home() {
     const keys = list.map(normalizePosKey).filter(Boolean);
     return [...new Set(keys)]; // 중복 제거
   };
-  const [showOpenOnly, setShowOpenOnly] = useState(false);
-
-  // 1. posts 상태 추가
-  const [posts, setPosts] = useState([]);
 
   // 2. API로 모집글 불러오기
   useEffect(() => {

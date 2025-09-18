@@ -82,28 +82,28 @@ export default function WritePage() {
       nav(`/posts/${id}`);
     } else {
       setSaving(true);
-    try {
-      const postData = {
-        title: form.title,
-        content: form.content,
-        category: form.type === "PROJECT" ? "project" : "study",
-        recruitmentCount: Number(form.recruitCount),
-        techStack: form.language ? form.language.split(/,| /).map(s => s.trim()).filter(Boolean) : [],
-        status: "open",
-        deadline: form.deadline ? form.deadline + "T23:59:59" : null,
-        meetingType: form.method,
-        duration: form.period,
-        position: form.position,
-        authorId: 1, // 임시 사용자 ID
-      };
-      await createPost(postData);
-      alert("등록 성공!");
-      nav("/");
-    }
-    } catch (e) {
-      setErr("등록 실패: " + (e?.response?.data?.message || e.message));
-    } finally {
-      setSaving(false);
+      try {
+        const postData = {
+          title: form.title,
+          content: form.content,
+          category: form.type === "PROJECT" ? "project" : "study",
+          recruitmentCount: Number(form.recruitCount),
+          techStack: form.language ? form.language.split(/,| /).map(s => s.trim()).filter(Boolean) : [],
+          status: "open",
+          deadline: form.deadline ? form.deadline + "T23:59:59" : null,
+          meetingType: form.method,
+          duration: form.period,
+          position: form.position,
+          authorId: 1, // 임시 사용자 ID
+        };
+        await createPost(postData);
+        alert("등록 성공!");
+        nav("/");
+      } catch (e) {
+        setErr("등록 실패: " + (e?.response?.data?.message || e.message));
+      } finally {
+        setSaving(false);
+      }
     }
   };
 
