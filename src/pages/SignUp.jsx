@@ -33,7 +33,6 @@ export default function SignUp() {
     e.preventDefault();
     setErr("");
 
-    // ...유효성 체크 생략...
 
     const payload = {
       email: form.email.trim(),
@@ -45,7 +44,6 @@ export default function SignUp() {
     try {
       const res = await api.post("/studify/api/v1/users", payload);
 
-      // ✅ 응답 body에서 id/email/nickname 저장
       const created = res?.data;
       if (created?.id) {
         localStorage.setItem("userId", String(created.id));
@@ -57,11 +55,10 @@ export default function SignUp() {
         localStorage.setItem("nickname", created.nickname);
       }
 
-      // (선택) Location 헤더도 로그로만 확인
-      // console.log("created Location:", res?.headers?.location);
+
 
       alert("회원가입이 완료되었습니다. 로그인 해주세요.");
-      // 필요하면 Navbar 갱신 알림
+
       window.dispatchEvent(new Event("auth-changed"));
       navigate("/signin");
     } catch (error) {

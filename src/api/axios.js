@@ -1,11 +1,17 @@
-import axios from "axios"; 
-
-const url = process.env.REACT_APP_JSON_SERVER_URL;
-console.log("[debug] >>> ref env : " , url);
+// src/api/axios.js
+import axios from "axios";
 
 const api = axios.create({
-    baseURL : 'http://localhost:8088',
-    withCredentials : true 
+  baseURL: "http://localhost:8088",
+  withCredentials: true,
 });
 
-export default api ; 
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("accessToken");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+export default api;
