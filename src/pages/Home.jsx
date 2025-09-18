@@ -14,23 +14,23 @@ import api from "../api/axios";
 export default function Home() {
   const [q, setQ] = useState("");
   const [type, setType] = useState("ALL");
-  const [position, setPosition] = useState("ALL"); // 사용자가 고른 필터 값
+  const [position, setPosition] = useState("ALL");
   const [showOpenOnly, setShowOpenOnly] = useState(false);
 
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
 
-  // ----- 공통 정규화 유틸 -----
+
   const normalizePosKey = (raw) => {
     if (raw == null) return null;
     const s = String(raw).trim();
 
-    // 한글 라벨 → 키
+
     const kor = { "백엔드":"BE", "프론트엔드":"FE", "디자이너":"DESIGNER", "안드로이드":"ANDROID", "웹":"WEB" };
     if (kor[s]) return kor[s];
 
-    // 소문자 값(@JsonValue) → 키
+
     const valToKey = {
       be:"BE", fe:"FE", pm:"PM", designer:"DESIGNER",
       ai:"AI", android:"ANDROID", ios:"IOS", web:"WEB"
@@ -38,23 +38,23 @@ export default function Home() {
     const low = s.toLowerCase();
     if (valToKey[low]) return valToKey[low];
 
-    // 이미 키(BE/FE/...) 형태면 그대로
+
     const up = s.toUpperCase();
     const keys = ["BE","FE","PM","DESIGNER","AI","ANDROID","IOS","WEB","ALL"];
     if (keys.includes(up)) return up;
 
-    return null; // 알 수 없는 값
+    return null; 
   };
 
   const normalizePosList = (v) => {
-    // 서버가 positions(배열) 또는 position(단일/배열) 무엇이든 수용
+
     const arr = Array.isArray(v) ? v
               : Array.isArray(v?.positions) ? v.positions
               : Array.isArray(v?.position) ? v.position
               : v?.positions ?? v?.position ?? v ?? [];
     const list = Array.isArray(arr) ? arr : [arr].filter(Boolean);
     const keys = list.map(normalizePosKey).filter(Boolean);
-    return [...new Set(keys)]; // 중복 제거
+    return [...new Set(keys)]; 
   };
 
   const matchPosition = (postPos, selected) => {
@@ -65,17 +65,30 @@ export default function Home() {
   };
 
   const isClosed = (p) => {
-    if (p?.isClosed) return true;
+    const statusStr = (p?.status ?? "").toString().toUpperCase();
+    if (statusStr === "CLOSED" || statusStr === "CLOSE") return true;
+    if (p?.isClosed === true) return true;
+
     if (!p?.deadline) return false;
-    const s = String(p.deadline).trim();
-    const norm = s.replace(/\./g, "-");
-    const d = /^\d{4}-\d{2}-\d{2}$/.test(norm) ? new Date(norm) : new Date(norm);
-    if (isNaN(d)) return false;
-    d.setHours(23, 59, 59, 999);
-    return Date.now() > d.getTime();
+    const raw = String(p.deadline).trim();
+
+    const s = raw.replace(/\./g, "-");
+
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
+    let endOfDay;
+    if (m) {
+      const [, yy, mm, dd] = m;
+      endOfDay = new Date(Number(yy), Number(mm) - 1, Number(dd), 23, 59, 59, 999);
+    } else {
+      const d = new Date(s);
+      if (isNaN(d)) return false;
+      endOfDay = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999);
+    }
+    return Date.now() > endOfDay.getTime();
   };
 
-  // ----- API 호출 -----
+
+
   useEffect(() => {
     (async () => {
       try {
@@ -83,15 +96,16 @@ export default function Home() {
         const { data } = await api.get("/studify/api/v1/post/posts");
 
         const normalized = (data ?? []).map((p) => {
+          const statusStr = (p.status ?? "").toString().toUpperCase(); 
+          const closedByStatus = statusStr === "CLOSED" || statusStr === "CLOSE";
           const posKeys = normalizePosList(p.positions ?? p.position);
           return {
             ...p,
             id: p.postId,
-            type: p.category?.toUpperCase(), // STUDY / PROJECT
-            // positions를 일관되게 key 배열로 들고다니자
-            positions: posKeys,             // ← 통일 필드
+            type: (p.category ?? "").toString().toUpperCase(),    
+            positions: posKeys,            
             language: Array.isArray(p.techStack) ? p.techStack.join(", ") : (p.techStack ?? ""),
-            isClosed: p.status === "CLOSED",
+            isClosed: closedByStatus || p.isClosed === true,
             author: p.authorId ?? "익명",
             commentCount: p.commentCount ?? 0,
           };
@@ -106,7 +120,7 @@ export default function Home() {
     })();
   }, []);
 
-  // ----- 필터링 -----
+
   const filtered = useMemo(() => {
     const qLower = q.trim().toLowerCase();
     return posts.filter((p) => {
@@ -118,7 +132,7 @@ export default function Home() {
     });
   }, [posts, q, type, position, showOpenOnly]);
 
-  // ----- 페이징 -----
+
   const PAGE_SIZE = 15;
   const [page, setPage] = useState(1);
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
@@ -148,7 +162,7 @@ export default function Home() {
         position={position}
         setPosition={setPosition}
         TYPES={TYPES}
-        POSITIONS={POSITIONS} // 여기의 value를 "BE/FE/..." 또는 "be/fe/..."로 둬도 정상 동작
+        POSITIONS={POSITIONS} 
       />
 
       <main className="container">
@@ -188,7 +202,6 @@ export default function Home() {
               key={e.id}
               e={{
                 ...e,
-                // PostCard가 position을 기대한다면 positions를 함께 내려주거나, 대표 포지션을 파생
                 position: e.positions,
                 isClosed: isClosed(e),
               }}
