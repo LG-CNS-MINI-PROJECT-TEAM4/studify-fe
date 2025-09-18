@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../styles/SignIn.css";
@@ -5,8 +6,38 @@ import Button from "../components/Button";
 import Navbar from "../components/Navbar";
 import api from "../api/axios";
 
-export default function SignIn() {
+function decodeJwtPayload(token = "") {
+  try {
+    const [, payload] = token.split(".");
+    if (!payload) return null;
+    const b64 = payload.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((payload.length + 3) % 4);
+    return JSON.parse(atob(b64));
+  } catch {
+    return null;
+  }
+}
 
+
+async function resolveUserIdByEmail(email, token) {
+  let page = 0;
+  const PAGE_SIZE = 100;
+  while (page < 50) {
+    const res = await api.get("/studify/api/v1/users", {
+      params: { page, size: PAGE_SIZE },
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const list = Array.isArray(res?.data) ? res.data : (res?.data?.content || []);
+    const me = list.find((u) => (u?.email || "").toLowerCase() === email.toLowerCase());
+    if (me?.id) return me.id;
+
+    const last = Array.isArray(res?.data) ? true : !!res?.data?.last;
+    if (last || list.length < PAGE_SIZE) break;
+    page += 1;
+  }
+  return null;
+}
+
+export default function SignIn() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
@@ -17,32 +48,32 @@ export default function SignIn() {
     setForm((f) => ({ ...f, [name]: value }));
   };
 
-
   const login = () => api.post("/api/auth/login", form);
 
   const onSubmit = async (e) => {
     e.preventDefault();
     setErr("");
-    if (!form.email || !form.password) {
-      setErr("이메일과 비밀번호를 입력해 주세요.");
-      return;
-    }
     setLoading(true);
     try {
       const res = await login();
+      const { accessToken, refreshToken } = res.data;
 
-      const { accessToken, refreshToken } = res?.data || {};
-      if (accessToken) localStorage.setItem("accessToken", accessToken);
-      if (refreshToken) localStorage.setItem("refreshToken", refreshToken);
+      localStorage.setItem("accessToken", accessToken);
+      localStorage.setItem("refreshToken", refreshToken);
 
-      localStorage.setItem("userEmail", form.email);
+      const payload = decodeJwtPayload(accessToken);
+      const email = payload?.sub;
 
+      const foundId = await resolveUserIdByEmail(email, accessToken);
+      if (foundId) {
+        localStorage.setItem("userId", String(foundId));
+      }
+
+      // 로그인 성공 → 홈으로 이동
       navigate("/");
     } catch (error) {
-      const status = error?.response?.status;
-      if (status === 401) setErr("이메일 또는 비밀번호가 올바르지 않습니다.");
-      else setErr("로그인에 실패했습니다. 잠시 후 다시 시도해 주세요.");
       console.error("[login error]", error);
+      setErr("로그인에 실패했습니다. 이메일/비밀번호를 확인하세요.");
     } finally {
       setLoading(false);
     }
@@ -71,7 +102,7 @@ export default function SignIn() {
             <label>
               비밀번호
               <input
-                name="password"                
+                name="password"
                 type="password"
                 placeholder="••••••••"
                 value={form.password}
