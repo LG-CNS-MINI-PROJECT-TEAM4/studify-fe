@@ -1,11 +1,12 @@
-import { useParams, Link, useLocation } from "react-router-dom";
+import { useParams, Link, useLocation, useNavigate } from "react-router-dom";
 import { POSTS } from "../mock/posts";
 import "./../styles/PostDetail.css";
 import { useState } from "react";
-import Navbar from "../components/Navbar"; // Navbar import 추가
+import Navbar from "../components/Navbar";
 
 export default function PostDetail({ commentCounts, onCommentAdd }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const { id } = useParams();
   const post = POSTS.find(p => String(p.id) === id);
 
@@ -13,6 +14,7 @@ export default function PostDetail({ commentCounts, onCommentAdd }) {
   const [comments, setComments] = useState(
     Array(commentCounts?.[post?.id] || 0).fill("").map((_, i) => `댓글 ${i + 1}`)
   );
+  const [closed, setClosed] = useState(false);
 
   if (!post) {
     return (
@@ -33,13 +35,13 @@ export default function PostDetail({ commentCounts, onCommentAdd }) {
     if (comment.trim()) {
       setComments([...comments, comment.trim()]);
       setComment("");
-      onCommentAdd && onCommentAdd(post.id); // Home의 댓글 수 갱신
+      onCommentAdd && onCommentAdd(post.id);
     }
   };
 
   return (
     <>
-      <Navbar /> {/* 페이지 최상단에 Navbar 배치 */}
+      <Navbar />
       <div className="post-detail-main-container">
         <div className="post-detail-header">
           <div></div>
@@ -49,8 +51,8 @@ export default function PostDetail({ commentCounts, onCommentAdd }) {
               {post.author} · {post.postDate}
             </p>
           </div>
-
         </div>
+
         <div className="post-detail-info-row">
           <div className="post-detail-label-row">
             <span className="post-detail-label">모집 구분</span>
@@ -85,22 +87,32 @@ export default function PostDetail({ commentCounts, onCommentAdd }) {
             <span className="post-detail-info-value">{post.language}</span>
           </div>
         </div>
+
         <hr className="post-detail-hr" />
         <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, marginBottom: 8}}>
           <h2 className="post-detail-section-title" style={{marginBottom: 0}}>프로젝트 소개</h2>
-          <button className="post-detail-apply-btn">신청하기</button>
         </div>
         <pre className="post-detail-content">
           {content}
         </pre>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
+
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginBottom: 12 }}>
+          <button
+            className="post-detail-edit-btn"
+            disabled={!location.state?.fromMyPage || closed}
+            onClick={() => setClosed(true)}
+          >
+            {closed ? "마감됨" : "모집 마감"}
+          </button>
           <button
             className="post-detail-edit-btn"
             disabled={!location.state?.fromMyPage}
+            onClick={() => navigate(`/write/${post.id}`, { state: location.state })}
           >
             수정하기
           </button>
         </div>
+
         <div className="post-detail-comment-wrap">
           <h3 className="post-detail-comment-title">
             댓글 <span>{comments.length}</span>
