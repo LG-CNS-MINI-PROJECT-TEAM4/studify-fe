@@ -30,7 +30,10 @@ export const closePost = async (postId) => {
 
 // 모집글 삭제 API
 export const deletePost = async (postId) => {
-  return axios.delete(`/studify/api/v1/post/${postId}`);
+  const token = localStorage.getItem("accessToken");
+  return axios.delete(`/studify/api/v1/post/${postId}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
 };
 
 // 모집글 수정 API
