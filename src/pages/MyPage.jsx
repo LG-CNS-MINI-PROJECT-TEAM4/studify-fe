@@ -2,112 +2,372 @@ import Navbar from "../components/Navbar";
 import { Link, useNavigate } from "react-router-dom";
 import "../styles/Footer.css";
 import "../styles/MyPage.css";
+import { useEffect, useState } from "react";
+import api from "../api/axios";
 
-import { useState } from "react";
+function decodeJwtPayload(token = "") {
+  try {
+    const [, payload] = token.split(".");
+    if (!payload) return null;
+    const b64 = payload.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((payload.length + 3) % 4);
+    return JSON.parse(atob(b64));
+  } catch {
+    return null;
+  }
+}
+
+
+async function resolveUserIdByEmail(email, token) {
+  let page = 0;
+  const PAGE_SIZE = 100;
+  while (page < 50) {
+    const res = await api.get("/studify/api/v1/users", {
+      params: { page, size: PAGE_SIZE },
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const list = Array.isArray(res?.data) ? res.data : (res?.data?.content || []);
+    const me = list.find((u) => (u?.email || "").toLowerCase() === email.toLowerCase());
+    if (me?.id) return me.id;
+
+    const last = Array.isArray(res?.data) ? true : !!res?.data?.last;
+    if (last || list.length < PAGE_SIZE) break;
+    page += 1;
+  }
+  return null;
+}
 
 export default function MyPage() {
-  // 탭 상태: 'info' 또는 'posts'
-  const [tab, setTab] = useState('info');
-  // 더미 글 데이터
-  const myPosts = [
-    { id: 1, title: "React 스터디 모집", date: "2025-09-01", comment: 2 },
-    { id: 2, title: "Node.js 프로젝트 팀원 구함", date: "2025-08-20", comment: 5 },
-    { id: 3, title: "Python 알고리즘 스터디", date: "2025-07-15", comment: 1 },
-  ];
-  const [user, setUser] = useState({
-    name: "신짱구",
-    id: "zzhang123",
-    nickname: "부리부리",
-    stack: ["React", "Node.js", "Python"],
-    birth: "1995-08-15",
-    email: "zzhang123@email.com"
-  });
+  const navigate = useNavigate();
 
-  const [stackInput, setStackInput] = useState(user.stack.join(", "));
+  const [tab, setTab] = useState("info");
+  const [accessToken, setAccessToken] = useState("");
+  const [user, setUser] = useState({ id: null, email: "", nickname: "" });
+  const [pw, setPw] = useState({ newPassword: "", confirm: "" });
 
-  const handleLogout = () => {
-    alert("로그아웃 되었습니다.");
-  };
-  const handleDelete = () => {
-    if(window.confirm("정말로 회원탈퇴 하시겠습니까?")){
-      alert("회원탈퇴 처리되었습니다.");
+  const [posts, setPosts] = useState([]);
+  const [postsLoading, setPostsLoading] = useState(false);
+
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState("");
+  const [okMsg, setOkMsg] = useState("");
+
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken") || "";
+    if (!token) { navigate("/signin"); return; }
+    setAccessToken(token);
+
+    const payload = decodeJwtPayload(token);
+    const email = payload?.sub || payload?.email || localStorage.getItem("userEmail") || "";
+    const id = parseInt(localStorage.getItem("userId") || "0", 10) || null;
+    const nickname = localStorage.getItem("nickname") || "";
+    if (!email) { navigate("/signin"); return; }
+
+    setUser({ id, email, nickname });
+  }, [navigate]);
+
+
+
+useEffect(() => {
+  if (!accessToken || !user.email || user.id) return;
+  (async () => {
+    try {
+      const foundId = await resolveUserIdByEmail(user.email, accessToken);
+      if (foundId) {
+        localStorage.setItem("userId", String(foundId));
+        setUser((u) => ({ ...u, id: foundId }));
+        window.dispatchEvent(new Event("auth-changed"));
+
+        try {
+          const meRes = await api.get(`/studify/api/v1/users/${foundId}`, {
+            headers: { Authorization: `Bearer ${accessToken}` },
+          });
+          const nick = meRes?.data?.nickname;
+          if (typeof nick === "string") {
+            setUser((u) => ({ ...u, nickname: nick }));
+            localStorage.setItem("nickname", nick);
+            window.dispatchEvent(new Event("auth-changed"));
+          }
+        } catch (_) {}
+      }
+    } catch (e) {
+      console.warn("[resolve userId failed]", e?.message);
+    }
+  })();
+}, [accessToken, user.email, user.id]);
+
+
+
+  useEffect(() => {
+    if (tab !== "posts" || !user.email) return;
+    (async () => {
+      setPostsLoading(true);
+      try {
+        const all = [];
+        const PAGE_SIZE = 100;
+        let page = 0;
+        let last = false;
+
+        while (!last && page < 50) {
+          const res = await api.get(`/studify/api/v1/post`, {
+            params: { page, size: PAGE_SIZE },
+            headers: { Authorization: `Bearer ${accessToken}` },
+          });
+
+          const list = Array.isArray(res?.data) ? res.data : (res?.data?.content || []);
+          all.push(...list);
+
+          last = Array.isArray(res?.data) ? true : !!res?.data?.last;
+          page += 1;
+
+          if (Array.isArray(res?.data)) break;
+        }
+
+        const me = user.email.toLowerCase();
+        const mine = all.filter((p) => {
+          const e1 = p?.authorEmail;
+          const e2 = p?.author?.email;
+          const e3 = p?.email;
+          return [e1, e2, e3].some((e) => (e || "").toLowerCase() === me);
+        });
+
+        setPosts(mine);
+      } catch {
+        setPosts([]);
+      } finally {
+        setPostsLoading(false);
+      }
+    })();
+  }, [tab, user.email, accessToken]);
+
+  const handleSave = async () => {
+    setErr(""); setOkMsg(""); setSaving(true);
+    try {
+      const nickname = (user.nickname || "").trim();
+      const newPw = pw.newPassword.trim();
+      const confirm = pw.confirm.trim();
+
+      if (nickname.length > 50) { setErr("닉네임은 50자 이하로 입력해 주세요."); setSaving(false); return; }
+      if (newPw || confirm) {
+        if (newPw.length < 8) { setErr("새 비밀번호는 8자 이상이어야 합니다."); setSaving(false); return; }
+        if (newPw !== confirm) { setErr("새 비밀번호와 확인이 일치하지 않습니다."); setSaving(false); return; }
+      }
+      if (!nickname && !newPw) {
+        setOkMsg("변경할 내용이 없습니다.");
+        setSaving(false);
+        return;
+      }
+
+
+      let uid = user.id;
+      if (!uid) {
+        const foundId = await resolveUserIdByEmail(user.email, accessToken);
+        if (foundId) {
+          localStorage.setItem("userId", String(foundId));
+          setUser((u) => ({ ...u, id: foundId }));
+          uid = foundId;
+        }
+      }
+
+
+      if (!uid) {
+        if (nickname) {
+          localStorage.setItem("nickname", nickname);
+          window.dispatchEvent(new Event("auth-changed"));
+          setOkMsg("저장완료");
+        }
+        if (newPw) setErr("에러발생ㅠㅠ)");
+        setPw({ newPassword: "", confirm: "" });
+        setSaving(false);
+        return;
+      }
+
+
+      const payload = {};
+      if (nickname) payload.nickname = nickname;
+      if (newPw) payload.password = newPw;
+
+      if (Object.keys(payload).length) {
+        await api.put(`/studify/api/v1/users/${uid}`, payload, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+      }
+
+
+      if (nickname) {
+        localStorage.setItem("nickname", nickname);
+        window.dispatchEvent(new Event("auth-changed"));
+      }
+      setPw({ newPassword: "", confirm: "" });
+      setOkMsg("저장되었습니다.");
+    } catch (error) {
+      const s = error?.response?.status;
+      if (s === 400) setErr("입력값을 확인해 주세요.");
+      else if (s === 401) setErr("다시 로그인해 주세요.");
+      else setErr("에러 발생ㅠㅠ");
+    } finally {
+      setSaving(false);
     }
   };
 
-  const handleStackChange = (e) => {
-    setStackInput(e.target.value);
-    setUser(u => ({
-      ...u,
-      stack: e.target.value
-        .split(/,|\n/)
-        .map(s => s.trim())
-        .filter(Boolean)
-    }));
+  const handleLogout = async () => {
+    try {
+      await api.post("/api/auth/logout", {}, { headers: { Authorization: `Bearer ${accessToken}` } });
+    } catch {}
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("userEmail");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("nickname");
+    window.dispatchEvent(new Event("auth-changed"));
+    navigate("/signin");
+  };
+
+  const handleDelete = async () => {
+    if (!window.confirm("정말로 회원탈퇴 하시겠습니까?")) return;
+
+    try {
+      let uid = user.id;
+
+      if (!uid) {
+        try {
+          uid = await resolveUserIdByEmail(user.email, accessToken);
+          if (uid) {
+            localStorage.setItem("userId", String(uid));
+            setUser((u) => ({ ...u, id: uid }));
+          }
+        } catch (_) {}
+      }
+
+      if (uid) {
+        try {
+          await api.delete(`/studify/api/v1/users/${uid}`, {
+            headers: { Authorization: `Bearer ${accessToken}` },
+          });
+        } catch (_) {
+        }
+      }
+
+    } finally {
+
+      try {
+        await api.post("/api/auth/logout", {}, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+      } catch (_) {}
+
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("userEmail");
+      localStorage.removeItem("userId");
+      localStorage.removeItem("nickname");
+      window.dispatchEvent(new Event("auth-changed"));
+
+      alert("회원탈퇴 되었습니다.");
+      navigate("/signin");
+    }
   };
 
   return (
     <div className="app">
       <Navbar />
-      <main className="container mypage-main" style={{ display: 'flex', gap: 32 }}>
-        {/* 좌측 메뉴 */}
+      <main className="container mypage-main" style={{ display: "flex", gap: 32 }}>
         <nav className="mypage-menu">
           <ul>
-            <li className={tab === 'info' ? 'active' : ''} onClick={() => setTab('info')}>회원정보</li>
-            <li className={tab === 'posts' ? 'active' : ''} onClick={() => setTab('posts')}>내가 쓴 글</li>
+            <li className={tab === "info" ? "active" : ""} onClick={() => setTab("info")}>회원정보</li>
+            <li className={tab === "posts" ? "active" : ""} onClick={() => setTab("posts")}>내가 쓴 글</li>
           </ul>
         </nav>
-        {/* 우측 컨텐츠 */}
+
         <section className="mypage-content" style={{ flex: 1 }}>
           <h2 className="mypage-title">마이페이지</h2>
-          {tab === 'info' && (
+
+          {tab === "info" && (
             <div className="mypage-info-box">
-              <div className="mypage-info-item"><b>이름</b>: {user.name}</div>
-              <div className="mypage-info-item"><b>아이디</b>: {user.id}</div>
-              <div className="mypage-info-item"><b>닉네임</b>: {user.nickname}</div>
+              <div className="mypage-info-item"><b>이메일</b>: {user.email}</div>
+
               <div className="mypage-info-item">
-                <b>기술스택</b>:
+                <b>닉네임</b>:
                 <input
                   type="text"
-                  value={stackInput}
-                  onChange={handleStackChange}
-                  placeholder="예: React, Node.js, Python"
-                  style={{marginLeft: 8, minWidth: 180, padding: "4px 10px", borderRadius: 8, border: "1px solid #ddd"}}
+                  value={user.nickname || ""}
+                  onChange={(e) => setUser((u) => ({ ...u, nickname: e.target.value }))}
+                  placeholder="닉네임을 입력하세요"
+                  style={{ marginLeft: 8, minWidth: 180, padding: "4px 10px", borderRadius: 8, border: "1px solid #ddd" }}
                 />
               </div>
-              <div className="mypage-info-item"><b>생년월일</b>: {user.birth}</div>
-              <div className="mypage-info-item"><b>이메일주소</b>: {user.email}</div>
+
+              <hr className="mypage-divider" />
+
+              <div className="mypage-info-item">
+                <b>새 비밀번호</b>:
+                <input
+                  type="password"
+                  name="newPassword"
+                  value={pw.newPassword}
+                  onChange={(e) => setPw((p) => ({ ...p, newPassword: e.target.value }))}
+                  placeholder="8자 이상"
+                  autoComplete="new-password"
+                  style={{ marginLeft: 8, minWidth: 180, padding: "4px 10px", borderRadius: 8, border: "1px solid #ddd" }}
+                />
+              </div>
+
+              <div className="mypage-info-item">
+                <b>새 비밀번호 확인</b>:
+                <input
+                  type="password"
+                  name="confirm"
+                  value={pw.confirm}
+                  onChange={(e) => setPw((p) => ({ ...p, confirm: e.target.value }))}
+                  placeholder="다시 입력"
+                  autoComplete="new-password"
+                  style={{ marginLeft: 8, minWidth: 180, padding: "4px 10px", borderRadius: 8, border: "1px solid #ddd" }}
+                />
+              </div>
+
+              {err && <div className="error" role="alert" style={{ marginTop: 8 }}>{err}</div>}
+              {okMsg && <div className="success" role="status" style={{ marginTop: 8 }}>{okMsg}</div>}
+
               <div className="mypage-save-row">
-                <button className="btn primary mypage-save-btn" onClick={() => alert("저장 되었습니다.")}>저장</button>
+                <button className="btn primary mypage-save-btn" disabled={saving} onClick={handleSave}>
+                  {saving ? "저장 중..." : "저장"}
+                </button>
+              </div>
+
+              <div className="container footer-inner mypage-footer-right" style={{ marginTop: 16, paddingLeft: 0 }}>
+                <button className="btn ghost mypage-btn" onClick={handleLogout}>로그아웃</button>
+                <button className="btn dark mypage-btn" onClick={handleDelete}>회원탈퇴</button>
               </div>
             </div>
           )}
-          {tab === 'posts' && (
+
+          {tab === "posts" && (
             <div className="mypage-posts-box">
-              <ul className="mypage-posts-list">
-                {myPosts.map(post => (
-                  <li key={post.id} className="mypage-posts-item" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Link
-                      to={`/posts/${post.id}`}
-                      className="mypage-posts-link"
-                      state={{ fromMyPage: true }}
+              {postsLoading ? (
+                <div>불러오는 중...</div>
+              ) : posts.length === 0 ? (
+                <div className="mypage-posts-empty">작성한 글이 없습니다.</div>
+              ) : (
+                <ul className="mypage-posts-list">
+                  {posts.map((post) => (
+                    <li
+                      key={post.id}
+                      className="mypage-posts-item"
+                      style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}
                     >
-                      <div className="mypage-posts-title">{post.title}</div>
-                      <div className="mypage-posts-meta">{post.date} · 댓글 {post.comment}</div>
-                    </Link>
-                    <button className="mypage-posts-delete-btn">삭제하기</button>
-                  </li>
-                ))}
-              </ul>
+                      <Link to={`/posts/${post.id}`} className="mypage-posts-link" state={{ fromMyPage: true }}>
+                        <div className="mypage-posts-title">{post.title || post.subject || `글 #${post.id}`}</div>
+                        <div className="mypage-posts-meta">
+                          {(post.createdAt || post.date || "").slice(0, 10)} · 댓글 {post.commentCount ?? post.comment ?? 0}
+                        </div>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           )}
         </section>
       </main>
-      <footer className="footer">
-        <div className="container footer-inner mypage-footer-right">
-          <button className="btn ghost mypage-btn" onClick={handleLogout}>로그아웃</button>
-          <button className="btn dark mypage-btn" onClick={handleDelete}>회원탈퇴</button>
-        </div>
-      </footer>
     </div>
   );
 }
