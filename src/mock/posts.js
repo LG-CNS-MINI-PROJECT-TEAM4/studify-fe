@@ -322,13 +322,13 @@ export const POSTS = [
 ];
 
 export const POSITIONS = [
-  { key: "ALL", label: "전체" },
-  { key: "BACKEND", label: "백엔드" },
-  { key: "FRONTEND", label: "프론트엔드" },
-  { key: "PLANNER", label: "PM" },
-  { key: "DESIGNER", label: "디자이너" },
-  { key: "AI", label: "AI" },
-  { key: "Android", label: "Android" },
+  { key: "all", label: "전체" },
+  { key: "be", label: "백엔드" },
+  { key: "fe", label: "프론트엔드" },
+  { key: "pm", label: "PM" },
+  { key: "designer", label: "디자이너" },
+  { key: "ai", label: "AI" },
+  { key: "android", label: "Android" },
   { key: "ios", label: "ios" },
   { key: "Web", label: "Web" },
 ];
