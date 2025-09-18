@@ -147,3 +147,9 @@ export default function Home() {
     </div>
   );
 }
+
+function isClosed(post) {
+  if (post.status === "closed") return true;
+  if (post.deadline && new Date(post.deadline) < new Date()) return true;
+  return false;
+}
