@@ -91,7 +91,7 @@ export default function Home() {
             positions: posKeys,
             language: Array.isArray(p.techStack) ? p.techStack.join(", ") : (p.techStack ?? ""),
             isClosed: p.status === "CLOSED",
-            author: p.authorId ?? "익명",
+            author: p.nickname ?? "익명",
             commentCount: p.commentCount ?? 0,
           };
         });
