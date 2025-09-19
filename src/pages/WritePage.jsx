@@ -280,7 +280,7 @@ export default function WritePage() {
             </label>
 
             <label>
-              사용 언어
+              기술 스택
               <input
                 name="language"
                 value={form.language}

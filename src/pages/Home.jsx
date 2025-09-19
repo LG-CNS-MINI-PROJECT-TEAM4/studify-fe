@@ -110,7 +110,10 @@ export default function Home() {
     return posts.filter((p) => {
       const byType = type === "ALL" || p.type === type;
       const byPos = matchPosition(p.positions, position);
-      const byQ = !qLower || String(p.title ?? "").toLowerCase().includes(qLower);
+      // const byQ = !qLower || String(p.title ?? "").toLowerCase().includes(qLower);
+      const byQ = !qLower || 
+        String(p.title ?? "").toLowerCase().includes(qLower) ||
+        String(p.content ?? "").toLowerCase().includes(qLower); // content 포함
       const openOnly = !showOpenOnly || !isClosed(p);
       return byType && byPos && byQ && openOnly;
     });

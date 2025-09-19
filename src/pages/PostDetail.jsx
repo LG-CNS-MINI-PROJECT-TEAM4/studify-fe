@@ -22,8 +22,6 @@ export default function PostDetail() {
   const userId = localStorage.getItem("userId"); // 로그인 시 저장해둔 유저 ID
   const isMine = post?.authorId?.toString() === userId?.toString();
 
-
-
   // 상세 + 댓글 함께 조회
   useEffect(() => {
     (async () => {
@@ -151,11 +149,83 @@ export default function PostDetail() {
     try {
       const d = new Date(v);
       if (isNaN(d)) return String(v);
-      return d.toLocaleString();
+      return d.toLocaleDateString("ko-KR");
     } catch {
       return String(v);
     }
   })();
+
+  const deadlineStr = (() => {
+    const v = post?.deadline;
+    if (!v) return "";
+    try {
+      const d = new Date(v);
+      if (isNaN(d)) return String(v);
+      return d.toLocaleDateString("ko-KR");
+    } catch {
+      return String(v);
+    }
+  })();
+
+
+  // 상태 변환 함수
+  const getStatusLabel = (status) => {
+    if (!status) return "";
+    switch (status.toString().toUpperCase()) {
+      case "OPEN":
+        return "모집중";
+      case "CLOSED":
+        return "모집 마감";
+      default:
+        return status;
+    }
+  };
+
+  const categoryMap = {
+    study: "스터디",
+    project: "프로젝트",
+  };
+  const categoryStr = categoryMap[post?.category?.toLowerCase()] ?? post?.category;
+
+  // const positionMap = {
+  //   be: "백엔드",
+  //   fe: "프론트엔드",
+  //   pm: "PM",
+  //   designer: "디자이너",
+  //   ai: "AI",
+  //   android: "안드로이드",
+  //   ios: "iOS",
+  //   web: "웹",
+  // };
+  // const positionStr = (post.position || [])
+  //   .map((p) => positionMap[p.toLowerCase()] ?? p)
+  //   .join(", ");
+
+  const positionMap = {
+    be: "백엔드",
+    fe: "프론트엔드",
+    pm: "PM",
+    designer: "디자이너",
+    ai: "AI",
+    android: "안드로이드",
+    ios: "iOS",
+    web: "웹",
+  };
+
+  const normalizePositions = (raw) => {
+    if (!raw) return [];
+    const list = Array.isArray(raw) ? raw : [raw];
+    return list
+      .map((p) => {
+        if (!p) return null;
+        const key = String(p).toLowerCase();
+        return positionMap[key] ?? p;
+      })
+      .filter(Boolean);
+  };
+
+  const positionStr = normalizePositions(post.position).join(", ");
+
 
   return (
     <>
@@ -164,14 +234,14 @@ export default function PostDetail() {
         <div className="post-detail-header">
           <h1>{post.title}</h1>
           <p>
-            {(post.author?.nickname ?? post.authorId ?? "익명")} · {createdAtStr}
+            {(post.author?.nickname ?? post.nickname ?? "익명")} · {createdAtStr}
           </p>
         </div>
 
         <div className="post-detail-info-row">
           <div className="post-detail-label-row">
             <span className="post-detail-label">모집 구분</span>
-            <span className="post-detail-info-value">{post.category}</span>
+            <span className="post-detail-info-value">{categoryStr}</span>
           </div>
           <div className="post-detail-label-row">
             <span className="post-detail-label">진행 방식</span>
@@ -183,7 +253,8 @@ export default function PostDetail() {
           </div>
           <div className="post-detail-label-row">
             <span className="post-detail-label">마감일</span>
-            <span className="post-detail-info-value">{post.deadline}</span>
+            {/* <span className="post-detail-info-value">{post.deadline}</span> */}
+            <span className="post-detail-info-value">{deadlineStr}</span>
           </div>
           <div className="post-detail-label-row">
             <span className="post-detail-label">예상 기간</span>
@@ -191,7 +262,7 @@ export default function PostDetail() {
           </div>
           <div className="post-detail-label-row">
             <span className="post-detail-label">모집 분야</span>
-            <span className="post-detail-info-value">{post.position?.join(", ")}</span>
+            <span className="post-detail-info-value">{positionStr}</span>
           </div>
           <div className="post-detail-label-row">
             <span className="post-detail-label">기술 스택</span>
@@ -199,7 +270,8 @@ export default function PostDetail() {
           </div>
           <div className="post-detail-label-row">
             <span className="post-detail-label">상태</span>
-            <span className="post-detail-info-value">{post.status}</span>
+            {/* <span className="post-detail-info-value">{post.status}</span> */}
+            <span className="post-detail-info-value">{getStatusLabel(post.status)}</span>
           </div>
         </div>
 
